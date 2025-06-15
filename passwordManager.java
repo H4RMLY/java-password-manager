@@ -3,14 +3,12 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-class PasswordManger{ // Main function - Program driver
+class main{ // Main function - Program driver
     public static void main(String[] args){
-            CreateFile storage = new CreateFile("TESTFILE");
+            CreateFile storage = new CreateFile("STORAGE");
             storage.create();
-            WriteToFile storageWriter = new WriteToFile("TESTFILE.txt");
-            storageWriter.write("THIS IS A TEST");
-            storageWriter.write("WHERE DOES THIS APPEAR");
-    }
+            storage.overwrite("REPLACED");
+	}
 }
 
 class GenString { // Random String Generator
@@ -66,22 +64,27 @@ class CreateFile{ // Create Empty File
             e.printStackTrace();
         }
     }
-}
-
-class WriteToFile{ // Write to given file
-    String filename;
-    public WriteToFile(String filename){
-        this.filename = filename;
-    }
-    public void write(String input){ // Main write function. This will overwrite existing content.
+	
+	public void overwrite(String input){ // Main write function. This will overwrite existing content.
         try{
-            FileWriter writer = new FileWriter(filename);
-            writer.write(input);
-            writer.close();
+            FileWriter overwriter = new FileWriter(filename);
+            overwriter.write(input);
+            overwriter.close();
             System.out.println("File updated");
         } catch (IOException e){
             System.out.println("You fucked the file write");
             e.printStackTrace();
         }
     }
+
+	public void write(String input){
+		try {
+			FileWriter writer = new FileWriter(filename, true);
+			writer.write(input);
+			writer.close();
+		} catch (IOException e){
+			System.out.println("YOu fucked the file write");
+			e.printStackTrace();
+		}
+	}
 }
