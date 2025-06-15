@@ -5,9 +5,9 @@ import java.io.IOException;
 
 class main{ // Main function - Program driver
     public static void main(String[] args){
-            CreateFile storage = new CreateFile("STORAGE");
-            storage.create();
-            storage.overwrite("REPLACED");
+			Arithmatic arth = new Arithmatic();
+			int prime = arth.generatePrime();
+			System.out.println(prime);
 	}
 }
 
@@ -86,5 +86,34 @@ class CreateFile{ // Create Empty File
 			System.out.println("YOu fucked the file write");
 			e.printStackTrace();
 		}
+	}
+}
+
+class Arithmatic{
+	public boolean checkPrime(int number){
+		if (number <= 1){
+			return false;
+		}
+		for (int i = 2; i <= Math.sqrt(number); i++){
+			if (number % i == 0){
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public int generatePrime(){
+		Random r = new Random();
+		int number = r.nextInt(999);
+		if (checkPrime(number)){
+			return number;
+		} else {
+			number = generatePrime();
+			return number;
+		}
+	}
+
+	public int multiply(int a, int b){
+		return a * b;
 	}
 }
