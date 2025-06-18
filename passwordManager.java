@@ -2,12 +2,15 @@ import java.util.*;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.math.BigInteger;
 
 class main{ // Main function - Program driver
-    public static void main(String[] args){
+    public static void main(String[] args){	
 			Arithmatic arth = new Arithmatic();
-			int prime = arth.generatePrime();
-			System.out.println("NEW PRIME NUMBER: " + prime);
+			Long keyA = arth.generatePrime();
+			Long keyB = arth.generatePrime();
+			Encryption e = new Encryption(keyA, keyB);
+			System.out.println(e.encrypt("HELLO"));
 	}
 }
 
@@ -90,7 +93,7 @@ class CreateFile{ // Create Empty File
 }
 
 class Arithmatic{
-	public boolean checkPrime(int number){
+	public boolean checkPrime(Long number){
 		if (number <= 1){
 			return false;
 		}
@@ -102,9 +105,9 @@ class Arithmatic{
 		return true;
 	}
 
-	public int generatePrime(){
+	public Long generatePrime(){
 		Random r = new Random();
-		int number = r.nextInt(999);
+		Long number = r.nextLong();
 		if (checkPrime(number)){
 			return number;
 		} else {
@@ -113,7 +116,50 @@ class Arithmatic{
 		}
 	}
 
-	public int multiply(int a, int b){
-		return a * b;
+}
+
+class Conversion{
+	public String doubleToHex(Double number){
+		return Double.toHexString(number);
+	}
+
+	public Double hexToDouble(String hex){
+		return Double.parseDouble(hex);		
+	}
+
+	public Long textToLong(String text){
+		try{
+			byte[] ascii = text.getBytes("US-ASCII");
+			String asciiString = "";
+			for (byte character : ascii){
+				asciiString += character;
+			}
+			return Long.parseLong(asciiString);
+		} catch (IOException e){
+			e.printStackTrace();
+			return null;
+		}
+	}
+}
+
+class Encryption{ // (plaintext ** keyA) mod secretKey
+	Long keyA;
+	Long keyB;
+	public Encryption(Long keyA, Long keyB){
+		this.keyA = keyA;
+		this.keyB = keyB;
+	}
+
+	public Long createEncryptionKey(){
+		return keyA * keyB;
+	}
+	
+	public String encrypt(String plaintext){
+		Conversion conv = new Conversion();
+		Long plInt = conv.textToLong(plaintext);
+		Long secretKey = createEncryptionKey();
+		Double ctInt = Math.pow(plInt, keyA) % secretKey;
+		String ciphertext = conv.doubleToHex(ctInt);
+		return ciphertext;
 	}
 }
