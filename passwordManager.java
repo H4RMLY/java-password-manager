@@ -7,7 +7,7 @@ class main{ // Main function - Program driver
     public static void main(String[] args){
 			Arithmatic arth = new Arithmatic();
 			int prime = arth.generatePrime();
-			System.out.println(prime);
+			System.out.println("NEW PRIME NUMBER: " + prime);
 	}
 }
 
