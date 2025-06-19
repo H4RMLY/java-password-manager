@@ -7,10 +7,11 @@ import java.math.BigInteger;
 class main{ // Main function - Program driver
     public static void main(String[] args){	
 			Arithmatic arth = new Arithmatic();
-			Long keyA = arth.generatePrime();
-			Long keyB = arth.generatePrime();
+			Long keyA = arth.generateLongPrime();
+			Long keyB = arth.generateLongPrime();
 			Encryption e = new Encryption(keyA, keyB);
-			System.out.println(e.encrypt("HELLO"));
+			//String ciphertext = e.encrypt(args[0]);
+			System.out.println(e.generateKeys());
 	}
 }
 
@@ -105,26 +106,58 @@ class Arithmatic{
 		return true;
 	}
 
-	public Long generatePrime(){
+	public Long generateLongPrime(){
 		Random r = new Random();
 		Long number = r.nextLong();
 		if (checkPrime(number)){
 			return number;
 		} else {
-			number = generatePrime();
+			number = generateLongPrime();
+			return number;
+		}
+	}
+	
+	public int generateIntPrime(){
+		Random r = new Random();
+		int number = r.nextInt();
+		if (checkPrime(Long.valueOf(number))){
+			return number;
+		} else {
+			number = generateIntPrime();
 			return number;
 		}
 	}
 
+	public Long HCFs(Long num1, Long num2){
+		Long hcf = 0;
+		for (Long i = 1; i <= num1 || i <= num2; i++){
+			if (num1%i == 0 && num2%i == 0){
+				hcf = i;
+			}
+		}
+		return hcf;
+	}
+
+	public Long generateRelativePrime(Long p1){
+		Long p2 = generateLongPrime();
+		if (HCFs(p1, p2) == 1){
+			return p2;
+		} else {
+			p2 = generateRelativePrime(p1);
+			return p2;
+		}
+	}
 }
 
 class Conversion{
-	public String doubleToHex(Double number){
-		return Double.toHexString(number);
+	public String BIToHex(BigInteger number){
+		String hexString = number.toString(16);
+		return hexString;
 	}
 
-	public Double hexToDouble(String hex){
-		return Double.parseDouble(hex);		
+	public BigInteger hexToBI(String hex){
+		BigInteger bigInt = new BigInteger(hex, 16);
+		return bigInt;
 	}
 
 	public Long textToLong(String text){
@@ -140,26 +173,47 @@ class Conversion{
 			return null;
 		}
 	}
+
 }
 
 class Encryption{ // (plaintext ** keyA) mod secretKey
-	Long keyA;
-	Long keyB;
-	public Encryption(Long keyA, Long keyB){
-		this.keyA = keyA;
-		this.keyB = keyB;
+	int p;
+	int q;
+	public Encryption(int p, int q){
+		this.p = p;
+		this.q = q;
 	}
 
-	public Long createEncryptionKey(){
-		return keyA * keyB;
+	public Long createSecretKey(){
+		Long secretKey = p.multiply(q);
+		return secretKey;
 	}
 	
 	public String encrypt(String plaintext){
 		Conversion conv = new Conversion();
-		Long plInt = conv.textToLong(plaintext);
-		Long secretKey = createEncryptionKey();
-		Double ctInt = Math.pow(plInt, keyA) % secretKey;
-		String ciphertext = conv.doubleToHex(ctInt);
+		BigInteger plInt = BigInteger.valueOf(conv.textToLong(plaintext));
+		System.out.println("plInt Encrypted: " + plInt);
+		BigInteger secretKey = createSecretKey();
+		BigInteger ctInt = plInt.modPow(p, secretKey);
+		System.out.println("ctInt Encrypted: " + ctInt);
+		String ciphertext = conv.BIToHex(ctInt);
 		return ciphertext;
+	}
+
+	public String decrypt(String ciphertext){
+		Conversion conv = new Conversion();
+		BigInteger ctInt = conv.hexToBI(ciphertext);
+		System.out.println("ctInt Decrypted " + ctInt);
+		BigInteger secretKey = createSecretKey();
+		BigInteger plInt = ctInt.modPow(q, secretKey);
+		System.out.println("plInt Decrypted: " + plInt);
+		return "OUTPUT";
+	}
+
+	public BigInteger generateKeys(){
+		Arithmatic arth = new Arithmatic();
+		BigInteger eulerTotient = p.subtract(BigInteger.valueOf(1)).multiply(q.subtract(BigInteger.valueOf(1)));
+		BigInteger e = arth.generateRelativePrime(eulerTotient);
+		return e;
 	}
 }
