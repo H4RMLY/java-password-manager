@@ -6,13 +6,17 @@ import java.math.BigInteger;
 
 class main{ // Main function - Program driver
     public static void main(String[] args){	
-			Arithmatic arth = new Arithmatic();
-			Long keyA = arth.generateLongPrime();
-			Long keyB = arth.generateLongPrime();
-			Encryption e = new Encryption(keyA, keyB);
-			//String ciphertext = e.encrypt(args[0]);
-			System.out.println(e.generateKeys());
-	}
+		FileHandler testFile = new FileHandler("TESTFILE");
+		GenString sg = new GenString();
+		testFile.create();
+		String username = "HARMLY";
+		testFile.write(username + ":" + sg.charPassword(10) + "\n");
+		testFile.write(username + ":" + sg.threeWordPassword() + "\n");
+		testFile.write(username + ":" + sg.charPassword(15) + "\n");	
+		ArrayList fileContent = testFile.read();
+		Display disp = new Display(fileContent);
+		disp.buildTable();
+	}	
 }
 
 class GenString { // Random String Generator
@@ -50,14 +54,31 @@ class GenString { // Random String Generator
     }
 }
 
-class CreateFile{ // Create Empty File
+class Display{
+	ArrayList<String[]> data;
+	public Display(ArrayList<String[]> data){
+		this.data = data;
+	}
+	public void buildTable(){
+		String breaker = "=";
+		String columnTitleOne = "Username";
+		String columnTitleTwo = "Password";
+		System.out.printf("%20s%30s\n", columnTitleOne, columnTitleTwo);
+		for (String[] line : data){
+			System.out.println(" " + breaker.repeat(55));
+			System.out.printf("| %20s | %30s |\n", line[0], line[1]);
+		}
+	}
+}
+
+class FileHandler{ // Create Empty File
     String filename;
-    public CreateFile(String filename){
+    public FileHandler(String filename){
         this.filename = filename;
     }
     public void create(){
         try {
-            File file = new File(String.format("%s.txt", filename));
+            File file = new File(String.format("%s", filename));
             if (file.createNewFile()){
                 System.out.println("File Created: " + file.getName());
             } else {
@@ -89,6 +110,23 @@ class CreateFile{ // Create Empty File
 		} catch (IOException e){
 			System.out.println("YOu fucked the file write");
 			e.printStackTrace();
+		}
+	}
+
+	public ArrayList read(){
+		try{
+			File file = new File(filename);
+			Scanner reader = new Scanner(file);
+			ArrayList<String[]> output = new ArrayList<String[]>();
+			while (reader.hasNextLine()){
+				String data = reader.nextLine();
+				String[] values = data.split(":");
+				output.add(values);
+			}
+			return output;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
 		}
 	}
 }
@@ -128,9 +166,9 @@ class Arithmatic{
 		}
 	}
 
-	public Long HCFs(Long num1, Long num2){
-		Long hcf = 0;
-		for (Long i = 1; i <= num1 || i <= num2; i++){
+	public int HCFs(int num1, int num2){
+		int hcf = 0;
+		for (int i = 1; i <= num1 || i <= num2; i++){
 			if (num1%i == 0 && num2%i == 0){
 				hcf = i;
 			}
@@ -138,8 +176,8 @@ class Arithmatic{
 		return hcf;
 	}
 
-	public Long generateRelativePrime(Long p1){
-		Long p2 = generateLongPrime();
+	public int generateRelativePrime(int p1){
+		int p2 = generateIntPrime();
 		if (HCFs(p1, p2) == 1){
 			return p2;
 		} else {
@@ -184,8 +222,8 @@ class Encryption{ // (plaintext ** keyA) mod secretKey
 		this.q = q;
 	}
 
-	public Long createSecretKey(){
-		Long secretKey = p.multiply(q);
+	public int createSecretKey(){
+		int secretKey = p * q;
 		return secretKey;
 	}
 	
@@ -193,8 +231,8 @@ class Encryption{ // (plaintext ** keyA) mod secretKey
 		Conversion conv = new Conversion();
 		BigInteger plInt = BigInteger.valueOf(conv.textToLong(plaintext));
 		System.out.println("plInt Encrypted: " + plInt);
-		BigInteger secretKey = createSecretKey();
-		BigInteger ctInt = plInt.modPow(p, secretKey);
+		BigInteger secretKey = BigInteger.valueOf(createSecretKey());
+		BigInteger ctInt = plInt.modPow(BigInteger.valueOf(p), secretKey);
 		System.out.println("ctInt Encrypted: " + ctInt);
 		String ciphertext = conv.BIToHex(ctInt);
 		return ciphertext;
@@ -204,16 +242,16 @@ class Encryption{ // (plaintext ** keyA) mod secretKey
 		Conversion conv = new Conversion();
 		BigInteger ctInt = conv.hexToBI(ciphertext);
 		System.out.println("ctInt Decrypted " + ctInt);
-		BigInteger secretKey = createSecretKey();
-		BigInteger plInt = ctInt.modPow(q, secretKey);
+		BigInteger secretKey = BigInteger.valueOf(createSecretKey());
+		BigInteger plInt = ctInt.modPow(BigInteger.valueOf(q), secretKey);
 		System.out.println("plInt Decrypted: " + plInt);
 		return "OUTPUT";
 	}
 
-	public BigInteger generateKeys(){
+	public int generateKeys(){
 		Arithmatic arth = new Arithmatic();
-		BigInteger eulerTotient = p.subtract(BigInteger.valueOf(1)).multiply(q.subtract(BigInteger.valueOf(1)));
-		BigInteger e = arth.generateRelativePrime(eulerTotient);
+		int eulerTotient = (p-1) * (q-1);
+		int e = arth.generateRelativePrime(eulerTotient);
 		return e;
 	}
 }
