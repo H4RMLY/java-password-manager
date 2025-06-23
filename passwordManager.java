@@ -6,16 +6,23 @@ import java.math.BigInteger;
 
 class main{ // Main function - Program driver
     public static void main(String[] args){	
-		FileHandler testFile = new FileHandler("TESTFILE");
-		GenString sg = new GenString();
-		testFile.create();
-		String username = "HARMLY";
-		testFile.write(username + ":" + sg.charPassword(10) + "\n");
-		testFile.write(username + ":" + sg.threeWordPassword() + "\n");
-		testFile.write(username + ":" + sg.charPassword(15) + "\n");	
-		ArrayList fileContent = testFile.read();
-		Display disp = new Display(fileContent);
-		disp.buildTable();
+		FileHandler storage = new FileHandler("storage");
+		storage.create();
+
+		Management strgMngr = new Management(storage);
+		strgMngr.addAccount("Ebay", "HARMLY", "HELLO");
+		
+		Display display = new Display();
+		display.buildTable(storage);
+
+		strgMngr.addAccount("Amazon", "HARMLY", "PASSWORD");
+		display.buildTable(storage);
+
+		strgMngr.addAccount("HMV", "HARMLY", "asdkhaksd");
+		display.buildTable(storage);
+
+		strgMngr.removeAccount("Amazon");
+		display.buildTable(storage);
 	}	
 }
 
@@ -54,21 +61,42 @@ class GenString { // Random String Generator
     }
 }
 
-class Display{
-	ArrayList<String[]> data;
-	public Display(ArrayList<String[]> data){
-		this.data = data;
-	}
-	public void buildTable(){
+class Display{	
+	public void buildTable(FileHandler file){
+		ArrayList<String[]> data = file.read();
 		String breaker = "=";
-		String columnTitleOne = "Username";
-		String columnTitleTwo = "Password";
-		System.out.printf("%20s%30s\n", columnTitleOne, columnTitleTwo);
+		String columnTitleOne = "Account";
+		String columnTitleTwo = "Username";
+		String columnTitleThree = "Password";
+		System.out.printf("%20s%20s%30s\n", columnTitleOne, columnTitleTwo, columnTitleThree);
 		for (String[] line : data){
-			System.out.println(" " + breaker.repeat(55));
-			System.out.printf("| %20s | %30s |\n", line[0], line[1]);
+			System.out.println(" " + breaker.repeat(78));
+			System.out.printf("| %20s | %20s | %30s |\n", line[0], line[1], line[2]);
 		}
 	}
+}
+
+class Management{
+	FileHandler file;
+	public Management(FileHandler file){
+		this.file = file;
+	}
+	public void addAccount(String account, String username, String password){
+		String instance = account + ":" + username + ":" + password + "\n";
+		file.write(instance);
+		System.out.println("Instance Added");
+	}
+	public void removeAccount (String account){
+		ArrayList<String[]> data = file.read();
+		for (String[] instance : data){
+			if (instance[0].equals(account)){
+				data.remove(instance);
+				System.out.println("Account Deleted");
+			}
+		}
+		file.update(data, file);
+	}
+		
 }
 
 class FileHandler{ // Create Empty File
@@ -95,7 +123,7 @@ class FileHandler{ // Create Empty File
             FileWriter overwriter = new FileWriter(filename);
             overwriter.write(input);
             overwriter.close();
-            System.out.println("File updated");
+            System.out.println("File overwritten");
         } catch (IOException e){
             System.out.println("You fucked the file write");
             e.printStackTrace();
@@ -108,7 +136,7 @@ class FileHandler{ // Create Empty File
 			writer.write(input);
 			writer.close();
 		} catch (IOException e){
-			System.out.println("YOu fucked the file write");
+			System.out.println("You fucked the file write");
 			e.printStackTrace();
 		}
 	}
@@ -128,6 +156,13 @@ class FileHandler{ // Create Empty File
 			e.printStackTrace();
 			return null;
 		}
+	}
+	public void update(ArrayList<String[]> data, FileHandler file){
+		file.overwrite("");
+		for (String[] instance : data){
+			file.write(instance[0] + ":" + instance[1] + ":" + instance[2] + "\n");
+		}
+		System.out.println("File updated");	
 	}
 }
 
