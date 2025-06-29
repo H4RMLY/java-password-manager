@@ -5,25 +5,70 @@ import java.io.IOException;
 import java.math.BigInteger;
 
 class main{ // Main function - Program driver
-    public static void main(String[] args){	
-		FileHandler storage = new FileHandler("storage");
-		storage.create();
-
-		Management strgMngr = new Management(storage);
-		strgMngr.addAccount("Ebay", "HARMLY", "HELLO");
-		
+    public static void main(String[] args){
+		Inputs inputs = new Inputs();
 		Display display = new Display();
-		display.buildTable(storage);
-
-		strgMngr.addAccount("Amazon", "HARMLY", "PASSWORD");
-		display.buildTable(storage);
-
-		strgMngr.addAccount("HMV", "HARMLY", "asdkhaksd");
-		display.buildTable(storage);
-
-		strgMngr.removeAccount("Amazon");
-		display.buildTable(storage);
+		System.out.println("WELCOME TO YOUR PASSWORD MANAGER");
+		display.showCommands();
+		inputs.getUserInput();
 	}	
+}
+
+class Inputs {
+	Scanner scanner;
+	Display display;
+	FileHandler storage;
+	Management mngr;
+	GenString generator;
+	public Inputs(){
+		this.scanner = new Scanner(System.in);
+		this.display = new Display();
+		this.storage = new FileHandler("storage");
+		storage.create();
+		this.mngr = new Management(storage);
+		this.generator = new GenString();
+	}
+	public void getUserInput(){
+		System.out.print("-<o>-: ");
+		String userInput = scanner.nextLine();
+		checkInput(userInput);
+		getUserInput(); // THIS NEEDS TO BE CHANGED AS THIS FUNCTION NEVER RETURNS UNLESS EXITED
+	}
+
+	public void checkInput(String input){
+		if (input.equals("EXIT") || input.equals("exit")){
+			System.out.println("Have a lovely day :)\nExiting...");
+			System.exit(0);
+		
+		} else if (input.equals("SHOW") || input.equals("show")){
+			display.buildTable(storage);
+		
+		} else if (input.equals("ADD") || input.equals("add")){
+			System.out.print("Account Name: ");
+			String accountName = scanner.nextLine();
+			System.out.print("Username: ");
+			String username = scanner.nextLine();
+			System.out.println("Password\n	rand: generates password of 14 random characters\n	rand3: generates password of three random words\n	Other: will enter as password ");
+			String passInput = scanner.nextLine();
+			String password;
+			if (passInput.equals("rand")){
+				password = generator.charPassword(14);
+			} else if (passInput.equals("rand3")){
+				password = generator.threeWordPassword();
+			} else {
+				password = passInput;
+			}
+			mngr.addAccount(accountName, username, password);
+
+		} else if (input.equals("HELP") || input.equals("help")){
+			display.showCommands();
+		
+		} else if (input.equals("RM") || input.equals("rm")){
+			System.out.print("Account Name: ");
+			mngr.removeAccount(scanner.nextLine());
+
+		}
+	}
 }
 
 class GenString { // Random String Generator
@@ -73,6 +118,10 @@ class Display{
 			System.out.println(" " + breaker.repeat(78));
 			System.out.printf("| %20s | %20s | %30s |\n", line[0], line[1], line[2]);
 		}
+	}
+	public void showCommands(){
+		System.out.println("OPTIONS:");
+		System.out.println("	EXIT:	Closes the program\n	HELP:	Show available commands\n	SHOW:	Displays all accounts usernames and passwords\n	ADD:	Saves an account\n	RM:	Removes an account");	
 	}
 }
 
